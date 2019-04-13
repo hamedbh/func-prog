@@ -20,27 +20,33 @@ library(caret)
 
 ## Overview
 
-- Why should I care about functional programming or purrr?
+- Why should I care about functional programming or `purrr`?
 - What can I do with these tools?
 - Where can I learn more?
 
-## Why should I care?
+<div class="notes">
+The structure for this session will be to answer three questions …
+</div>
 
-Three ideas about code that hopefully won't be too controversial:
+# Why should I care?
+
+## Three ideas
 
 1. The easier code is to understand, the better.
 2. The easier code is to reuse and adapt, the better.
 3. The more reliable my results from code, the better.
 
 <div class="notes">
-Caveat: no, using purrr and functional programming isn't the only way to achieve clean and reusable code, but it is one way, and it has a lot of strengths. 
+Here are three ideas about code that hopefully won't be too controversial …
 
-Caveat 2: Yes you can do functional programming without purrr, and it's often the right choice. But purrr gives you loads of freebies that make things easier, and is more reliable in ways that make it great to use.
+Caveat: no, using `purrr` and functional programming isn't the only way to achieve clean and reusable code, but it is one way, and it has a lot of strengths. 
 
-Before we get going in earnest I need to talk briefly about two things at the centre of this talk …
+Caveat 2: Yes you can do functional programming without `purrr`, and it's often the right choice. But `purrr` gives you loads of freebies that make things easier, and is more reliable in ways that make it great to use.
+
+Addressing these three points will hopefully convince you that you should care. Before we get going in earnest though I need to talk briefly about two things at the centre of this talk …
 </div>
 
-## Functions
+## Functions {.build}
 
 ```{r create square, echo=TRUE}
 square <- function(x) {
@@ -51,9 +57,9 @@ square <- function(x) {
 <div class="notes">
 What is a function?
 
-- Code that takes in some number of inputs, 
-- does stuff
-- then returns some number of outputs.
+Code that takes in some number of inputs, does stuff, then returns some number of outputs.
+
+This is how you most often define a function in R.
 </div>
 
 ## Functions {.build}
@@ -81,7 +87,7 @@ As you can see.
 
 For lists we need some sort of iteration, which we'll see in a bit.
 
-But before that, a word on …
+But before that, a word on our second star of the show …
 </div>
 
 ## The Pipe {.flexbox .vcenter}
@@ -89,13 +95,13 @@ But before that, a word on …
 ![](img/pipe.png)
 
 <div class="notes">
-Many of you will already know about the %>% operator. Read it as: 
+Many of you will already know about the `%>%` operator. Read it as: 
 
 "Take the output from whatever was on the left, and let it be the first argument to the function on the right".
 
 It allows code to be read from left to right, top to bottom, instead of nesting function calls. 
 
-For anyone that's used a Unix command line it's broadly the same as the | operator.
+For anyone that's used a Unix command line it's very similar to the `|` operator.
 </div>
 
 ## The Pipe
@@ -106,14 +112,32 @@ c(1, 2, 3, 4, 5) %>%
 ```
 
 <div class="notes">
-Pipe a vector into square() and it gives the expected result.
+Pipe a vector into `square()` and it gives the expected result.
 
-It's not clear why you'd bother using the pipe here, but as we go along hopefully the case for the pipe will be more convincing.
+I haven't really made the case yet for the pipe, and you probably wouldn't bother using it here. As we go along hopefully the case for the pipe will be more convincing.
 
 Now let's get back to those three principles I mentioned earlier.
 </div>
 
-## The easier code is to understand, the better
+# The easier code is to understand, the better
+
+## What is Functional Programming? {.build}
+
+### Functional Programming …
+
+> … treats computation as the evaluation of mathematical functions …
+
+> … avoids changing state and side effects …
+
+> … avoids mutable data …
+
+<div class="notes">
+[Talk through the definition.]
+
+The aim is to write code that works like a simple machine: take inputs, do stuff only to those inputs, then return some sort of value. 
+</div>
+
+## The easier code is to understand, the better {.build}
 
 ```{r map function, echo=TRUE, eval=FALSE}
 map()
@@ -121,11 +145,9 @@ map()
 
 
 <div class="notes">
-Functional programming is an approach that treats computation as the evaluation of mathematical functions.
+`purrr` is a software library with tools for functional programming. Often this is for iteration, as an alternative to loops.
 
-purrr is a set of tools that uses functional programming. Often this is for iteration, as an alternative to loops.
-
-The workhorse is the map() function:
+The workhorse is the `map()` function:
 </div>
 
 ## The easier code is to understand, the better
@@ -160,7 +182,7 @@ Then return the result.
 This still looks a bit like overkill for a fairly simple problem, but it looks more useful if you have a list with elements of different lengths 
 </div>
 
-## The easier code is to understand, the better
+## The easier code is to understand, the better {.build}
 
 ```{r run map on list different lengths, echo=TRUE}
 list(c(1), 
@@ -170,12 +192,20 @@ list(c(1),
 ```
 
 <div class="notes">
-As you can see here.
+As you can see here. It preserves the structure of the input.
 
-The code is clear and easy to understand: you can see what the inputs are, and what it will do to them
+The code is clear and easy to understand: you can see what the inputs are, and what it will do to them. 
 </div>
 
-## The easier code is to reuse and adapt, the better {.build}
+# The easier code is to reuse and adapt, the better
+
+<div class="notes">
+Wrapping code inside a function allows it to be reused and adapted easily.
+
+Here's an example I've 'borrowed' from Hadley Wickham's book, Advanced R.
+</div>
+
+## The easier code is to reuse and adapt, the better
 
 ```{r sample data, echo=TRUE}
 # Generate a sample dataset
@@ -188,11 +218,7 @@ df
 Source: [Hadley Wickham, Advanced R][adv_r_fp_ex]
 
 <div class="notes">
-Wrapping code inside a function allows it to be reused and adapted easily.
-
-Here's an example I've 'borrowed' from Hadley Wickham's book, Advanced R.
-
-You have data where missing values have been coded as -99, and you want to replace them all with NA.
+You have data where missing values have been coded as `-99`, and you want to replace them all with `NA`.
 </div>
 
 ## The easier code is to reuse and adapt, the better
@@ -232,7 +258,7 @@ df$f <- fix_missing(df$e)
 <div class="notes">
 This is better, but it still leaves room for error.
 
-We can use map() to make this simpler and more reliable.
+We can use `map()` to make this simpler and more reliable.
 </div>
 
 ## The easier code is to reuse and adapt, the better {.build}
@@ -248,9 +274,9 @@ df %>%
 ```
 
 <div class="notes">
-Now the whole data.frame is handled at once.
+Now the whole `data.frame` is handled at once.
 
-But map() will only ever return a list, so to get back to a data.frame we need one extra step …
+But `map()` will only ever return a list, so to get back to a `data.frame` we need one extra step …
 </div>
 
 ## The easier code is to reuse and adapt, the better {.build}
@@ -262,19 +288,21 @@ df %>%
 ```
 
 <div class="notes">
-Just add another pipe, stick as.data.frame() on the end of the chain, and now the output is a data.frame as desired.
+Just add another pipe, stick `as.data.frame()` on the end of the chain, and now the output is a `data.frame` as desired. 
+
+There's no limit to the number of pipes you can chain together, and being able to successively apply functions like this allows you to do really complex things in a clear and consistent way.
 </div>
 
-## The more reliable my results from code, the better {.build}
+# The more reliable my results from code, the better
 
-### Question: 
+## Question … {.build}
 
 <div class="centered">
 #### Do you expect code to give the same results every time?
 </div>
 
 <div class="notes">
-This is true for pure functions, like square() from earlier on. Its output relies only on its inputs. But what about …
+This is true for functions like `square()` from earlier on. Those functions, whose outputs rely only on their inputs, are called **pure functions**. But what about …
 </div>
 
 ## Impure Functions 
@@ -284,9 +312,9 @@ This is true for pure functions, like square() from earlier on. Its output relie
 ### `plot()`
 
 <div class="notes">
-All of these either rely on, or change, the state of the environment in which they are called.
+All of these either rely on, or change, the state of the environment in which they are called. They are called **impure functions**. 
 
-That doesn't make them bad: they are indispensable! But it means we have to be extra careful when using them for programming.
+Despite the judgmental-sounding name that doesn't make them bad: they are indispensable! (You'll see that in the example later on.) But it means we have to be extra careful when using them for programming.
 </div>
 
 ## The more reliable my results from code, the better {.build}
@@ -298,12 +326,14 @@ clean_df <- df %>%
 clean_df
 ```
 <div class="notes">
-Functional programming is a style that expects a function with the same arguments to return the same results every time. 
+I mentioned earlier that functional programming modifying objects in place.
 
-It also avoids modifying objects in place: instead you would pass the object into a function and assign the output to a new name. You can see that here with the data cleaning example.
+Here we pass the object into a series of functions and assign the output to a new name.
 
-Hopefully you can see why you should care. What can we do with these tools?
+Hopefully by now you can see why you should care!
 </div>
+
+# What can we do with these tools?
 
 ## Type-stable outputs with `map_*()` {.build}
 
@@ -313,17 +343,17 @@ list(1, 2, 3) %>%
     unlist()
 ```
 <div class="notes">
-The basic unit for working with purrr is the list.
+The basic unit for working with `purrr` is the list.
 
-map() takes in a list and **ALWAYS** returns a list. (Can also take a vector, or something that's a list in disguise like a data.frame.)
+`map()` takes in a list and **ALWAYS** returns a list. (Can also take a vector, or something that's a list in disguise like a data.frame.)
 
 What if you know that the output will be a list comprising only length 1 integer vectors?
 
-Can use unlist() on the output, but that has a couple of drawbacks:
+Can use `unlist()` on the output, but that has a couple of drawbacks:
 
-1. It will work whether or not the list really does have just a single value in each element.
+First: it will work whether or not the list really does have just a single value in each element.
 
-2. The output can be of any type (character, integer etc.)
+Second: The output can be of any type (character, integer etc.)
 </div>
 
 ## Type-stable outputs with `map_*()`
@@ -337,7 +367,7 @@ list(1, 2, c(3, 4)) %>%
 <div class="notes">
 You can see here that the structure of the list, with different length vectors, is lost.
 
-Instead purrr has a whole family of functions that will attempt to return a vector of the chosen type. 
+Instead `purrr` has a whole family of functions that will attempt to return a vector of the chosen type. 
 </div>
 
 ## Type-stable outputs with `map_*()`
@@ -348,9 +378,9 @@ list(1, 2, 3) %>%
 ```
 
 <div class="notes">
-The output is a numeric vector instead of a list.
+The output from `map_dbl()` is a numeric vector instead of a list.
 
-purrr is much more demanding than unlist() though. For example:
+`purrr` is much more demanding than `unlist()` though. For example:
 </div>
 
 ## Type-stable outputs with `map_*()` {.build}
@@ -374,9 +404,9 @@ list(1, 2, c(3, 4)) %>%
 <div class="notes">
 Also if every element of the output isn't length one then it will throw an error.
 
-This makes purrr sound like a prima donna, but this means you have high confidence in the outputs: you avoid silent failures, and if your code fails you can more easily trace how and why it happened. This is where it differs from some of the *apply() family, particularly sapply(). This is the difference in reliability that I alluded to earlier. You don't know for sure what the type of the output from `sapply()` will be.
+This makes purrr sound like a prima donna, but this means you have high confidence in the outputs: you avoid silent failures, and if your code fails you can more easily trace how and why it happened. This is where it differs from some of the `*apply()` family, particularly `sapply()`. This is the difference in reliability that I alluded to earlier. You don't know for sure what the type of the output from `sapply()` will be.
 
-You can also output a tibble by calling map_dfr() or map_dfc(). To return to the data cleaning example from earlier …
+You can also output a tibble by calling `map_dfr()` or `map_dfc()`. To return to the data cleaning example from earlier …
 </div>
 
 ## Type-stable outputs with `map_*()` {.build}
@@ -387,9 +417,9 @@ df %>%
 ```
 
 <div class="notes">
-Using map_dfc() combines the output as the columns of a tibble (which is the tidyverse version of a data.frame). 
+Using `map_dfc()` combines the output as the columns of a tibble (which is the tidyverse version of a `data.frame`). 
 
-If you wanted to combine the output as the rows of a tibble you would use map_dfr(). You'll see an example of that a bit later.
+If you wanted to combine the output as the rows of a tibble you would use `map_dfr()`. You'll see an example of that a bit later.
 </div>
 
 ## Mappers {.build}
@@ -408,7 +438,7 @@ Often we want a function just to do a one-off job.
 
 Here I want the length of each element of the list minus one, maybe because I'm going to work in another language that uses zero-indexing. This sort of function with no name is called an anonymous function.
 
-`purrr` provides an easier way than this, which is called a mapper.
+`purrr` provides an easier way than this, which is called a **mapper**.
 </div>
 
 ## Mappers
@@ -421,11 +451,11 @@ list(1,
 ```
 
 <div class="notes">
-The tilde creates a formula in R. This sort of one-sided formula in purrr lets you build functions very easily. 
+The tilde creates a formula in R. This sort of one-sided formula in `purrr` lets you build functions very easily. 
 
 You save a few keystrokes, plus there's no curly braces to worry about closing. 
 
-And you can refer to the elements of the list with that .x pronoun, which is another thing you get for free with purrr.
+And you can refer to the elements of the list with that `.x` pronoun, which is another thing you get for free with `purrr`.
 </div>
 
 ## The `map2_*()` family {.build}
@@ -471,12 +501,12 @@ pmap(list(lst1, lst2, lst3),
 ```
 
 <div class="notes">
-The pmap() functions take a list of lists or vectors as the first argument, then apply a function.
+The `pmap()` functions take a list of lists or vectors as the first argument, then apply a function.
 
-This ..1, ..2 shorthand lets you refer to the relevant elements of the lists.
+This `..1`, `..2` shorthand lets you refer to the relevant elements of the lists.
 </div>
 
-## The `imap_*()` family
+## The `imap_*()` family {.build}
 
 ```{r imap show lst1, echo=TRUE}
 lst1
@@ -485,7 +515,7 @@ lst1
 <div class="notes">
 Sometimes it's really useful to work with the elements of a list AND its indices or names.
 
-Start with this list. Suppose we want the 
+Start with this list. Suppose we want the first element of the first list, second of the second, third of the third.
 </div>
 
 ## The `imap_*()` family
@@ -496,7 +526,7 @@ map2_style
 ```
 
 <div class="notes">
-Can do this manually by adding this seq_along(lst1) argument to map2()
+Can do this manually by adding this `seq_along(lst1)` argument to `map2()`.
 </div>
 
 ## The `imap_*()` family
@@ -508,16 +538,20 @@ all.equal(map2_style, imap_style)
 ```
 
 <div class="notes">
-Using imap() gives exactly the same results.
+Using `imap()` gives exactly the same results.
 
-If that list has names then .y will be the names rather than the indices.
+If that list has names then `.y` will be the names rather than the indices.
 </div>
 
-## `purrr` in action {.build}
+# `purrr` in action
 
-### The German Credit Dataset
+<div class="notes">
+Now an example just to show you some of what's possible with `purrr` and functional programming.
+</div>
 
-```{r}
+## The German Credit Dataset
+
+```{r read data, echo=TRUE}
 d <- read_rds("./data/clean/german_credit_cleaned.rds")
 head(d) %>% 
     select(acct_status, duration, outcome) %>% 
@@ -525,8 +559,6 @@ head(d) %>%
 ```
 
 <div class="notes">
-This is an example just to show you some of what's possible with purrr and functional programming
-
 We will try to predict credit default using the German credit dataset, which is open-source. Where outcome is good the customer paid off in full, bad means default.
 
 I've already done the cleaning and recoding.
@@ -539,7 +571,7 @@ I've already done the cleaning and recoding.
 - Helps the model to generalise to new data.
 
 <div class="notes">
-I'll be using a regularised binomial regression via the glmnet package.
+I'll be using a regularised binomial regression via the `glmnet` package.
 
 Regularised just means that the model adds a penalty for giving more importance to the variables when making predictions. 
 
@@ -572,7 +604,7 @@ Want to:
 - Test $\alpha = \{0.0, 0.05, 0.10, ... , 1.0\}$, and
 - Have the results in a useful format.
 
-That means iteration!
+We can do this with functional programming and `purrr`!
 
 ## Data Loading and Partition
 
@@ -592,7 +624,7 @@ Notice though that we can pipe a matrix into a function: in this case to scale a
 ## Data Loading and Partition
 
 ```{r data prep and partition 2, echo=TRUE}
-random_seed <- 1623
+random_seed <- 1054
 set.seed(random_seed)
 train_idx <- createDataPartition(y, 
                                  p = 0.8, 
@@ -686,23 +718,15 @@ c("lambda.min", "lambda.1se") %>%
 
 ## Training Results
 
-```{r train results 2, echo=TRUE}
-c("lambda.min", "lambda.1se") %>% 
-    map(~ trained_models %>% 
-            mutate(lambda = .x))
-```
-
-<div class="notes">
-Don't want the results as a list, so we use `map_dfr()` instead.
-</div>
-
-## Training Results
-
 ```{r train results 3, echo=TRUE}
 c("lambda.min", "lambda.1se") %>% 
     map_dfr(~ trained_models %>% 
                 mutate(lambda = .x))
 ```
+
+<div class="notes">
+This is the use of `map_dfr()` that I mentioned earlier. It binds the two tibbles together row-wise, so we get a single tibble of 42 rows.
+</div>
 
 ## Training Results
 
@@ -763,6 +787,10 @@ train_results <- c("lambda.min", "lambda.1se") %>%
     )
 ```
 
+<div class="notes">
+Then just map that function on to the predictions. See at the end I can pass the extra argument for the actual values as an extra named argument.
+</div>
+
 ## Training Results
 
 ```{r train results 6, echo=TRUE}
@@ -773,6 +801,8 @@ train_results
 Here are the results. But you may be wondering:
 
 **Why bother with all of this?**
+
+(Especially if you've heard of the `caret` package!)
 
 For one thing it makes it easy to work with our results. Suppose we want to plot the training error …
 </div>
@@ -785,7 +815,7 @@ train_results %>%
     geom_point(size = 2) + 
     scale_colour_viridis_d(end = 0.7, 
                            option = "B") + 
-    scale_y_continuous("Training Deviance") + 
+    scale_y_continuous("Mean Training Deviance") + 
     scale_x_continuous(expression(alpha), 
                        breaks = c(0, 0.5, 1), 
                        labels = c("Ridge", "Elastic", "LASSO")) + 
@@ -807,7 +837,7 @@ train_results %>%
     geom_point(size = 2) + 
     scale_colour_viridis_d(end = 0.7, 
                            option = "B") + 
-    scale_y_continuous("Training Deviance") + 
+    scale_y_continuous("Mean Training Deviance") + 
     scale_x_continuous(expression(alpha), 
                        breaks = c(0, 0.5, 1), 
                        labels = c("Ridge", "Elastic", "LASSO")) + 
@@ -822,9 +852,9 @@ Because the results are in a tibble getting this plot is easy.
 
 It also means we can do all the usual operations on the tibble, like filtering, which brings us on to selecting a model.
 
-Let's be conservative about these results and go with the value of alpha that gives the best results with lambda.1se, and check its performance on the test dataset.
+Let's be conservative about these results and go with the value of alpha that gives the best results with lambda.1se, and check its performance on the test dataset. Remember that lambda.1se has a stronger penalty, so it should generalise better than the minimum.
 
-And **purely for comparison** we will also look at the same value of alpha with lambda.min, just to see how they compare.
+And **purely for comparison** we will also look at the same value of alpha with lambda.min. (Would never do this on a real problem: you can't choose models based on the test results!)
 </div>
 
 ## Test Results {.build}
@@ -843,7 +873,7 @@ Here we pull out the value of alpha that gave the best results on "lambda.1se"
 
 ## Test Results
 
-```{r test results, echo=TRUE}
+```{r test results 1, echo=TRUE}
 test_results <- train_results %>% 
     filter(alpha == best_alpha) %>% 
     mutate(test_preds = map2(model, 
@@ -855,11 +885,21 @@ test_results <- train_results %>%
     mutate(test_dev = map_dbl(test_preds, 
                               binom_deviance, 
                               actual = ytest))
-test_results
 ```
 
 <div class="notes">
-Now get predictions just as we did earlier. You can see that the gap has narrowed between the two from training to test, which is what you'd expect. 
+Now get predictions just as we did earlier, then compute the deviance. 
+</div>
+
+## Test Results
+
+```{r test results 2, echo=TRUE}
+test_results %>% 
+    select(lambda, train_dev, test_dev, everything())
+```
+
+<div class="notes">
+You can see that the gap has narrowed between the two from training to test, which is what we expected. 
 </div>
 
 ## Plot Test Results
@@ -875,7 +915,7 @@ test_results %>%
     ggtitle("Training Error by lambda Value") + 
     theme_classic() + 
     theme(legend.title = element_blank()) + 
-    coord_flip(ylim = c(0.5, 1.5))
+    coord_flip(ylim = c(0.92, 1.1))
 ```
 
 <div class="notes">
@@ -884,10 +924,9 @@ The gap between the test error for the two values for lambda has basically vanis
 
 ## Where next with purrr and Functional Programming?
 
-- [Jenny Bryan's purrr tutorials][JB_purrr]
-- The [basic][DC_basic] and [intermediate][DC_intermediate] purrr courses on DataCamp
-- [Machine Learning in the Tidyverse][tidy_ML] on DataCamp (which exploits purrr and list-columns in a cool way)
-- [Hadley Wickham's Advanced R][adv_r]
+- To learn about `purrr`: [Jenny Bryan's tutorials][JB_purrr]
+- For more on FP in R: [Hadley Wickham's Advanced R][adv_r]
+- Further reading on FP Principles: [Structure and Interpretation of Computer Programs][SICP], AKA _The Wizard Book_
 
 [adv_r_fp_ex]: http://adv-r.had.co.nz/Functional-programming.html#fp-motivation
 [JB_purrr]: https://jennybc.github.io/purrr-tutorial/
@@ -895,3 +934,4 @@ The gap between the test error for the two values for lambda has basically vanis
 [DC_intermediate]: https://www.datacamp.com/courses/intermediate-functional-programming-with-purrr
 [tidy_ML]: https://www.datacamp.com/courses/machine-learning-in-the-tidyverse
 [adv_r]: http://adv-r.had.co.nz/
+[SICP]: https://web.mit.edu/alexmv/6.037/sicp.pdf
