@@ -1,0 +1,897 @@
+---
+title: "Functional Programming with `purrr`"
+author: "Hamed Bastan-Hagh"
+date: "17 April 2019"
+output: 
+    ioslides_presentation:
+        incremental: true
+        widescreen: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r load libraries, message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse)
+library(glmnet)
+library(caret)
+```
+
+## Overview
+
+- Why should I care about functional programming or purrr?
+- What can I do with these tools?
+- Where can I learn more?
+
+## Why should I care?
+
+Three ideas about code that hopefully won't be too controversial:
+
+1. The easier code is to understand, the better.
+2. The easier code is to reuse and adapt, the better.
+3. The more reliable my results from code, the better.
+
+<div class="notes">
+Caveat: no, using purrr and functional programming isn't the only way to achieve clean and reusable code, but it is one way, and it has a lot of strengths. 
+
+Caveat 2: Yes you can do functional programming without purrr, and it's often the right choice. But purrr gives you loads of freebies that make things easier, and is more reliable in ways that make it great to use.
+
+Before we get going in earnest I need to talk briefly about two things at the centre of this talk …
+</div>
+
+## Functions
+
+```{r create square, echo=TRUE}
+square <- function(x) {
+    return(x^2)
+}
+```
+
+<div class="notes">
+What is a function?
+
+- Code that takes in some number of inputs, 
+- does stuff
+- then returns some number of outputs.
+</div>
+
+## Functions {.build}
+
+```{r apply square 2, echo=TRUE}
+square(c(1, 2, 3, 4, 5))
+```
+
+<div class="notes">
+Here I call the function on a vector of numbers, 
+
+And the result is as expected.
+
+Note though that this won't work if those same numbers are stored in a list …
+</div>
+
+## Functions
+
+```{r square list, echo=TRUE, error=TRUE}
+square(list(1, 2, 3, 4, 5))
+```
+
+<div class="notes">
+As you can see.
+
+For lists we need some sort of iteration, which we'll see in a bit.
+
+But before that, a word on …
+</div>
+
+## The Pipe {.flexbox .vcenter}
+
+![](img/pipe.png)
+
+<div class="notes">
+Many of you will already know about the %>% operator. Read it as: 
+
+"Take the output from whatever was on the left, and let it be the first argument to the function on the right".
+
+It allows code to be read from left to right, top to bottom, instead of nesting function calls. 
+
+For anyone that's used a Unix command line it's broadly the same as the | operator.
+</div>
+
+## The Pipe
+
+```{r pipe to square, echo=TRUE}
+c(1, 2, 3, 4, 5) %>% 
+    square()
+```
+
+<div class="notes">
+Pipe a vector into square() and it gives the expected result.
+
+It's not clear why you'd bother using the pipe here, but as we go along hopefully the case for the pipe will be more convincing.
+
+Now let's get back to those three principles I mentioned earlier.
+</div>
+
+## The easier code is to understand, the better
+
+```{r map function, echo=TRUE, eval=FALSE}
+map()
+```
+
+
+<div class="notes">
+Functional programming is an approach that treats computation as the evaluation of mathematical functions.
+
+purrr is a set of tools that uses functional programming. Often this is for iteration, as an alternative to loops.
+
+The workhorse is the map() function:
+</div>
+
+## The easier code is to understand, the better
+
+```{r map with list, echo=TRUE, eval=FALSE}
+map(list(1, 2, 3, 4, 5))
+```
+
+<div class="notes">
+Take a list or vector
+</div>
+
+## The easier code is to understand, the better
+
+```{r map with list and func, echo=TRUE, eval=FALSE}
+map(list(1, 2, 3, 4, 5), square)
+```
+
+<div class="notes">
+Apply some function to each element
+</div>
+
+## The easier code is to understand, the better
+
+```{r run map on list, echo=TRUE}
+map(list(1, 2, 3, 4, 5), square)
+```
+
+<div class="notes">
+Then return the result.
+
+This still looks a bit like overkill for a fairly simple problem, but it looks more useful if you have a list with elements of different lengths 
+</div>
+
+## The easier code is to understand, the better
+
+```{r run map on list different lengths, echo=TRUE}
+list(c(1), 
+     c(2, 3, 4), 
+     c(5, 6)) %>% 
+    map(square)
+```
+
+<div class="notes">
+As you can see here.
+
+The code is clear and easy to understand: you can see what the inputs are, and what it will do to them
+</div>
+
+## The easier code is to reuse and adapt, the better {.build}
+
+```{r sample data, echo=TRUE}
+# Generate a sample dataset
+set.seed(1014)
+df <- data.frame(replicate(6, sample(c(1:10, -99), 6, rep = TRUE)))
+names(df) <- letters[1:6]
+df
+```
+
+Source: [Hadley Wickham, Advanced R][adv_r_fp_ex]
+
+<div class="notes">
+Wrapping code inside a function allows it to be reused and adapted easily.
+
+Here's an example I've 'borrowed' from Hadley Wickham's book, Advanced R.
+
+You have data where missing values have been coded as -99, and you want to replace them all with NA.
+</div>
+
+## The easier code is to reuse and adapt, the better
+
+```{r error prone recoding, echo=TRUE, eval=FALSE}
+df$a[df$a == -99] <- NA
+df$b[df$b == -99] <- NA
+df$c[df$c == -98] <- NA
+df$d[df$d == -99] <- NA
+df$e[df$e == -99] <- NA
+df$f[df$g == -99] <- NA
+```
+
+<div class="notes">
+Doing this with copy paste operations like this is error prone. 
+
+There are two errors on here that you might spot, or might not.
+
+A better approach is just to define the operation you want to happen, then apply it consistently.
+</div>
+
+## The easier code is to reuse and adapt, the better
+
+```{r better recoding, eval=FALSE, echo=TRUE}
+fix_missing <- function(x) {
+    x[x == -99] <- NA
+    x
+}
+df$a <- fix_missing(df$a)
+df$b <- fix_missing(df$b)
+df$c <- fix_missing(df$c)
+df$d <- fix_missing(df$d)
+df$e <- fix_missing(df$e)
+df$f <- fix_missing(df$e)
+```
+
+<div class="notes">
+This is better, but it still leaves room for error.
+
+We can use map() to make this simpler and more reliable.
+</div>
+
+## The easier code is to reuse and adapt, the better {.build}
+
+```{r best recoding, echo=TRUE}
+fix_missing <- function(x) {
+    x[x == -99] <- NA
+    x
+}
+
+df %>% 
+    map(fix_missing)
+```
+
+<div class="notes">
+Now the whole data.frame is handled at once.
+
+But map() will only ever return a list, so to get back to a data.frame we need one extra step …
+</div>
+
+## The easier code is to reuse and adapt, the better {.build}
+
+```{r best recoding to df, echo=TRUE}
+df %>% 
+    map(fix_missing) %>% 
+    as.data.frame()
+```
+
+<div class="notes">
+Just add another pipe, stick as.data.frame() on the end of the chain, and now the output is a data.frame as desired.
+</div>
+
+## The more reliable my results from code, the better {.build}
+
+### Question: 
+
+<div class="centered">
+#### Do you expect code to give the same results every time?
+</div>
+
+<div class="notes">
+This is true for pure functions, like square() from earlier on. Its output relies only on its inputs. But what about …
+</div>
+
+## Impure Functions 
+
+### `Sys.Date()`
+### `rnorm(1)`
+### `plot()`
+
+<div class="notes">
+All of these either rely on, or change, the state of the environment in which they are called.
+
+That doesn't make them bad: they are indispensable! But it means we have to be extra careful when using them for programming.
+</div>
+
+## The more reliable my results from code, the better {.build}
+
+```{r best recoding and assign to new var, echo=TRUE}
+clean_df <- df %>% 
+    map(fix_missing) %>% 
+    as.data.frame()
+clean_df
+```
+<div class="notes">
+Functional programming is a style that expects a function with the same arguments to return the same results every time. 
+
+It also avoids modifying objects in place: instead you would pass the object into a function and assign the output to a new name. You can see that here with the data cleaning example.
+
+Hopefully you can see why you should care. What can we do with these tools?
+</div>
+
+## Type-stable outputs with `map_*()` {.build}
+
+```{r unlist map output, echo=TRUE}
+list(1, 2, 3) %>% 
+    map(square) %>% 
+    unlist()
+```
+<div class="notes">
+The basic unit for working with purrr is the list.
+
+map() takes in a list and **ALWAYS** returns a list. (Can also take a vector, or something that's a list in disguise like a data.frame.)
+
+What if you know that the output will be a list comprising only length 1 integer vectors?
+
+Can use unlist() on the output, but that has a couple of drawbacks:
+
+1. It will work whether or not the list really does have just a single value in each element.
+
+2. The output can be of any type (character, integer etc.)
+</div>
+
+## Type-stable outputs with `map_*()`
+
+```{r unreliable unlist, echo=TRUE}
+list(1, 2, c(3, 4)) %>% 
+    map(square) %>% 
+    unlist()
+```
+
+<div class="notes">
+You can see here that the structure of the list, with different length vectors, is lost.
+
+Instead purrr has a whole family of functions that will attempt to return a vector of the chosen type. 
+</div>
+
+## Type-stable outputs with `map_*()`
+
+```{r map_dbl ex, echo=TRUE}
+list(1, 2, 3) %>% 
+    map_dbl(square)
+```
+
+<div class="notes">
+The output is a numeric vector instead of a list.
+
+purrr is much more demanding than unlist() though. For example:
+</div>
+
+## Type-stable outputs with `map_*()` {.build}
+
+```{r map_dbl type error, echo=TRUE, error=TRUE}
+list(1, 2, 3) %>% 
+    map_int(square)
+```
+
+<div class="notes">
+It won't do any type coercion, so if you give it a double type and ask it to return an integer, it will throw an error.
+</div>
+
+## Type-stable outputs with `map_*()` {.build}
+
+```{r map_dbl length error, echo=TRUE, error=TRUE}
+list(1, 2, c(3, 4)) %>% 
+    map_dbl(square)
+```
+
+<div class="notes">
+Also if every element of the output isn't length one then it will throw an error.
+
+This makes purrr sound like a prima donna, but this means you have high confidence in the outputs: you avoid silent failures, and if your code fails you can more easily trace how and why it happened. This is where it differs from some of the *apply() family, particularly sapply(). This is the difference in reliability that I alluded to earlier. You don't know for sure what the type of the output from `sapply()` will be.
+
+You can also output a tibble by calling map_dfr() or map_dfc(). To return to the data cleaning example from earlier …
+</div>
+
+## Type-stable outputs with `map_*()` {.build}
+
+```{r best recoding and map_dfc, echo=TRUE}
+df %>% 
+    map_dfc(fix_missing)
+```
+
+<div class="notes">
+Using map_dfc() combines the output as the columns of a tibble (which is the tidyverse version of a data.frame). 
+
+If you wanted to combine the output as the rows of a tibble you would use map_dfr(). You'll see an example of that a bit later.
+</div>
+
+## Mappers {.build}
+
+```{r get python indices long, echo=TRUE}
+list(1, 
+     c(2, 3), 
+     c(4, 5, 6)) %>% 
+    map_int(function(x) {
+        length(x) - 1L
+    })
+```
+
+<div class="notes">
+Often we want a function just to do a one-off job. 
+
+Here I want the length of each element of the list minus one, maybe because I'm going to work in another language that uses zero-indexing. This sort of function with no name is called an anonymous function.
+
+`purrr` provides an easier way than this, which is called a mapper.
+</div>
+
+## Mappers
+
+```{r get python indices mapper, echo=TRUE}
+list(1, 
+     c(2, 3), 
+     c(4, 5, 6)) %>% 
+    map_int(~ length(.x) - 1L)
+```
+
+<div class="notes">
+The tilde creates a formula in R. This sort of one-sided formula in purrr lets you build functions very easily. 
+
+You save a few keystrokes, plus there's no curly braces to worry about closing. 
+
+And you can refer to the elements of the list with that .x pronoun, which is another thing you get for free with purrr.
+</div>
+
+## The `map2_*()` family {.build}
+
+### What if we have two lists and want to work with them both?
+
+```{r map2, echo=TRUE}
+lst1 <- list(1, 
+             c(2, 3), 
+             c(4, 5, 6))
+lst2 <- list(1, 2, 3)
+
+map2(lst1, lst2, ~ .x[.y])
+```
+
+<div class="notes">
+Here you subset the elements of the first list with the elements of the second list.
+
+And you can refer to the elements of the second list with .y.
+</div>
+
+## The `map2_*()` family {.build}
+
+```{r map2_dbl, echo=TRUE}
+map2_dbl(lst1, lst2, ~ .x[.y])
+```
+
+<div class="notes">
+You have the same options for type-specific outputs with `map2()` as with `map()`.
+
+map2_dbl() returns a numeric vector instead of a list.
+</div>
+
+## The `pmap_*()` family {.build}
+
+Why stop at two lists?
+
+```{r pmap, echo=TRUE}
+lst3 <- list(10, 100, 1000)
+
+pmap(list(lst1, lst2, lst3), 
+     ~ ..1[..2] * ..3)
+```
+
+<div class="notes">
+The pmap() functions take a list of lists or vectors as the first argument, then apply a function.
+
+This ..1, ..2 shorthand lets you refer to the relevant elements of the lists.
+</div>
+
+## The `imap_*()` family
+
+```{r imap show lst1, echo=TRUE}
+lst1
+```
+
+<div class="notes">
+Sometimes it's really useful to work with the elements of a list AND its indices or names.
+
+Start with this list. Suppose we want the 
+</div>
+
+## The `imap_*()` family
+
+```{r imap manually, echo=TRUE}
+map2_style <- map2_dbl(lst1, seq_along(lst1), ~.x[.y])
+map2_style
+```
+
+<div class="notes">
+Can do this manually by adding this seq_along(lst1) argument to map2()
+</div>
+
+## The `imap_*()` family
+
+```{r imap properly, echo=TRUE}
+imap_style <- imap_dbl(lst1, ~.x[.y])
+imap_style
+all.equal(map2_style, imap_style)
+```
+
+<div class="notes">
+Using imap() gives exactly the same results.
+
+If that list has names then .y will be the names rather than the indices.
+</div>
+
+## `purrr` in action {.build}
+
+### The German Credit Dataset
+
+```{r}
+d <- read_rds("./data/clean/german_credit_cleaned.rds")
+head(d) %>% 
+    select(acct_status, duration, outcome) %>% 
+    knitr::kable()
+```
+
+<div class="notes">
+This is an example just to show you some of what's possible with purrr and functional programming
+
+We will try to predict credit default using the German credit dataset, which is open-source. Where outcome is good the customer paid off in full, bad means default.
+
+I've already done the cleaning and recoding.
+</div>
+
+## `glmnet`
+
+- Standard binomial regression, plus …
+- A penalty for considering variables to be too important.
+- Helps the model to generalise to new data.
+
+<div class="notes">
+I'll be using a regularised binomial regression via the glmnet package.
+
+Regularised just means that the model adds a penalty for giving more importance to the variables when making predictions. 
+
+It's a way of helping to generalise the model by reducing overfitting.
+</div>
+
+## `glmnet`
+
+### Two elements to the penalty
+
+1. `lambda`: the **strength** of the penalty
+2. `alpha`: the **type** of penalty
+
+<div class="notes">
+glmnet will automatically optimise the strength of the penalty for us if we want it to, so let's put that to one side for now.
+
+However we have to pick a value for alpha, which can range from 0 to 1.
+
+0 means completely one type, 1 means completely the other, and anything between is a mix of the two.
+
+(I'm skating over a lot of the finer points to focus more on the functional programming elements.)
+
+The term for alpha and lambda is hyperparameters. There's no way to know just by looking at the dataset what value will be best for them. So we have to test.
+</div>
+
+## `glmnet` {.build}
+
+Want to:
+
+- Test $\alpha = \{0.0, 0.05, 0.10, ... , 1.0\}$, and
+- Have the results in a useful format.
+
+That means iteration!
+
+## Data Loading and Partition
+
+```{r data prep and partition 1, echo=TRUE}
+X <- model.matrix(outcome ~ 0 + ., 
+                  data = d) %>% 
+    scale()
+y <- if_else(d$outcome == "bad", 1L, 0L)
+```
+
+<div class="notes">
+glmnet only accepts numeric type inputs, so the first step is to turn our tibble, `d`, into a matrix.
+
+Notice though that we can pipe a matrix into a function: in this case to scale all of the predictors so that they have a mean of 0 and variance 1. 
+</div>
+
+## Data Loading and Partition
+
+```{r data prep and partition 2, echo=TRUE}
+random_seed <- 1623
+set.seed(random_seed)
+train_idx <- createDataPartition(y, 
+                                 p = 0.8, 
+                                 list = FALSE)
+Xtrain <- X[train_idx, ]
+Xtest <- X[-train_idx, ]
+ytrain <- y[train_idx]
+ytest <- y[-train_idx]
+```
+
+<div class="notes">
+Best practice is to use different datasets for training and evaluating the model, so here we reserve 20% of the data for evaluation.
+
+Note here that we set a random seed that will be used by `createDataPartition()`, which makes everything reproducible. So `createDataPartition()` is an impure function.
+</div>
+
+## Data Loading and Partition
+
+```{r data prep and partition 3, echo=TRUE}
+set.seed(random_seed)
+cv_folds <- createFolds(ytrain, 
+                        k = 10, 
+                        list = FALSE)
+head(cv_folds)
+```
+
+<div class="notes">
+And then within the training data we will use cross-validation to select the best values for our hyperparameters. This step identifies which rows of the dataset will appear in which folds.
+</div>
+
+## Model Training {.build}
+
+```{r model training 1, echo=TRUE}
+tibble(alpha = seq(0, 1, 0.05))
+```
+
+<div class="notes">
+Start off with the values we want to use for alpha
+</div>
+
+## Model Training {.build}
+
+```{r model training 2, echo=TRUE, warning=FALSE}
+trained_models <- tibble(
+    alpha = seq(0, 1, 0.05)
+) %>% 
+    mutate(model = map(alpha, 
+                       ~ cv.glmnet(Xtrain, 
+                                   ytrain, 
+                                   family = "binomial", 
+                                   foldid = cv_folds, 
+                                   alpha = .x)))
+trained_models
+```
+
+<div class="notes">
+This step actually builds the model.
+
+[Walk through the code]
+
+Note the list column in the output.
+
+All the models are stored in one place, and the alpha column is a bit like metadata for the models, so we don't need to look inside each one to see how it was trained.
+</div>
+
+## Training Results
+
+### To get results we need:
+
+- A way to measure prediction error;
+- To tell `glmnet` which value of `lambda` to use: 
+    - `"lambda.min"`, or 
+    - `"lambda.1se"`
+
+<div class="notes">
+lambda.min is the one that got the absolute best results in model training.
+
+lambda.1se is the highest value of lambda whose error was within 1 standard error of the minimum.
+
+Suppose we want to get both?
+</div>
+
+## Training Results
+
+### Build up the results step by step
+
+```{r train results 1, echo=TRUE, eval=FALSE}
+c("lambda.min", "lambda.1se") %>% 
+    map(~ trained_models)
+```
+
+## Training Results
+
+```{r train results 2, echo=TRUE}
+c("lambda.min", "lambda.1se") %>% 
+    map(~ trained_models %>% 
+            mutate(lambda = .x))
+```
+
+<div class="notes">
+Don't want the results as a list, so we use `map_dfr()` instead.
+</div>
+
+## Training Results
+
+```{r train results 3, echo=TRUE}
+c("lambda.min", "lambda.1se") %>% 
+    map_dfr(~ trained_models %>% 
+                mutate(lambda = .x))
+```
+
+## Training Results
+
+```{r train results 4, echo=TRUE}
+c("lambda.min", "lambda.1se") %>% 
+    map_dfr(
+        ~ trained_models %>% 
+            mutate(lambda = .x) %>% 
+            mutate(train_preds = map2(model, 
+                                      lambda, 
+                                      ~ predict(.x, 
+                                                newx = Xtrain, 
+                                                type = "response", 
+                                                s = .y)))
+    )
+```
+
+<div class="notes">
+This gives us the predictions for our models at each value of lambda, so now we can calculate the error (deviance). 
+
+One way to do that would be just adding the code to calculate deviance in another call to mutate at the end of this chain. But this session is about functions!
+</div>
+
+## Error Function
+
+```{r deviance function, echo=TRUE}
+binom_deviance <- function(pred, 
+                           actual) {
+    mean(2 * (dplyr::coalesce(actual * log(actual/pred), 0) + 
+                  dplyr::coalesce((1 - actual) * 
+                               log((1 - actual)/(1 - pred)), 
+                           0)))
+}
+```
+
+<div class="notes">
+This function calculates binomial regression deviance. 
+
+Because `coalesce()` is part of the `dplyr` package I add `dplyr::` in front of it: that means the function will work even if `dplyr` isn't loaded. (Although it does have to be installed.)
+</div>
+
+## Training Results
+
+```{r train results 5, echo=TRUE}
+train_results <- c("lambda.min", "lambda.1se") %>% 
+    map_dfr(
+        ~ trained_models %>% 
+            mutate(lambda = .x) %>% 
+            mutate(train_preds = map2(model, 
+                                      lambda, 
+                                      ~ predict(.x, 
+                                                newx = Xtrain, 
+                                                type = "response", 
+                                                s = .y))) %>% 
+            mutate(train_dev = map_dbl(train_preds, 
+                                       binom_deviance, 
+                                       actual = ytrain))
+    )
+```
+
+## Training Results
+
+```{r train results 6, echo=TRUE}
+train_results
+```
+
+<div class="notes">
+Here are the results. But you may be wondering:
+
+**Why bother with all of this?**
+
+For one thing it makes it easy to work with our results. Suppose we want to plot the training error …
+</div>
+
+## Plot training error
+
+```{r plot training error code, echo=TRUE, eval=FALSE}
+train_results %>% 
+    ggplot(aes(alpha, train_dev, colour = lambda)) + 
+    geom_point(size = 2) + 
+    scale_colour_viridis_d(end = 0.7, 
+                           option = "B") + 
+    scale_y_continuous("Training Deviance") + 
+    scale_x_continuous(expression(alpha), 
+                       breaks = c(0, 0.5, 1), 
+                       labels = c("Ridge", "Elastic", "LASSO")) + 
+    ggtitle("Training Error by Penalty Type", 
+            subtitle = "LASSO, Ridge, Elastic Net Regression") + 
+    theme_classic() + 
+    theme(legend.title = element_blank())
+```
+
+<div class="notes">
+I can just pass `train_results` into `ggplot()` and get a plot.
+</div>
+
+## Plot training error
+
+```{r plot training error figure}
+train_results %>% 
+    ggplot(aes(alpha, train_dev, colour = lambda)) + 
+    geom_point(size = 2) + 
+    scale_colour_viridis_d(end = 0.7, 
+                           option = "B") + 
+    scale_y_continuous("Training Deviance") + 
+    scale_x_continuous(expression(alpha), 
+                       breaks = c(0, 0.5, 1), 
+                       labels = c("Ridge", "Elastic", "LASSO")) + 
+    ggtitle("Training Error by Penalty Type", 
+            subtitle = "LASSO, Ridge, Elastic Net Regression") + 
+    theme_classic() + 
+    theme(legend.title = element_blank())
+```
+
+<div class="notes">
+Because the results are in a tibble getting this plot is easy.
+
+It also means we can do all the usual operations on the tibble, like filtering, which brings us on to selecting a model.
+
+Let's be conservative about these results and go with the value of alpha that gives the best results with lambda.1se, and check its performance on the test dataset.
+
+And **purely for comparison** we will also look at the same value of alpha with lambda.min, just to see how they compare.
+</div>
+
+## Test Results {.build}
+
+```{r best alpha, echo=TRUE}
+best_alpha <- train_results %>% 
+    filter(lambda == "lambda.1se") %>% 
+    top_n(n = 1, wt = -train_dev) %>% 
+    pull(alpha)
+best_alpha
+```
+
+<div class="notes">
+Here we pull out the value of alpha that gave the best results on "lambda.1se"
+</div>
+
+## Test Results
+
+```{r test results, echo=TRUE}
+test_results <- train_results %>% 
+    filter(alpha == best_alpha) %>% 
+    mutate(test_preds = map2(model, 
+                             lambda, 
+                             ~ predict(.x, 
+                                       newx = Xtest, 
+                                       type = "response", 
+                                       s = .y))) %>% 
+    mutate(test_dev = map_dbl(test_preds, 
+                              binom_deviance, 
+                              actual = ytest))
+test_results
+```
+
+<div class="notes">
+Now get predictions just as we did earlier. You can see that the gap has narrowed between the two from training to test, which is what you'd expect. 
+</div>
+
+## Plot Test Results
+
+```{r plot test results}
+test_results %>% 
+    mutate(lambda = factor(lambda)) %>% 
+    ggplot(aes(lambda, test_dev, colour = lambda)) + 
+    geom_point(size = 4) + 
+    scale_colour_viridis_d(end = 0.7, 
+                           option = "B") + 
+    scale_y_continuous("Test Data Deviance") + 
+    ggtitle("Training Error by lambda Value") + 
+    theme_classic() + 
+    theme(legend.title = element_blank()) + 
+    coord_flip(ylim = c(0.5, 1.5))
+```
+
+<div class="notes">
+The gap between the test error for the two values for lambda has basically vanished. We were right to be cautious!
+</div>
+
+## Where next with purrr and Functional Programming?
+
+- [Jenny Bryan's purrr tutorials][JB_purrr]
+- The [basic][DC_basic] and [intermediate][DC_intermediate] purrr courses on DataCamp
+- [Machine Learning in the Tidyverse][tidy_ML] on DataCamp (which exploits purrr and list-columns in a cool way)
+- [Hadley Wickham's Advanced R][adv_r]
+
+[adv_r_fp_ex]: http://adv-r.had.co.nz/Functional-programming.html#fp-motivation
+[JB_purrr]: https://jennybc.github.io/purrr-tutorial/
+[DC_basic]: https://www.datacamp.com/courses/foundations-of-functional-programming-with-purrr
+[DC_intermediate]: https://www.datacamp.com/courses/intermediate-functional-programming-with-purrr
+[tidy_ML]: https://www.datacamp.com/courses/machine-learning-in-the-tidyverse
+[adv_r]: http://adv-r.had.co.nz/
