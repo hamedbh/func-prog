@@ -323,125 +323,13 @@ Hopefully by now you can see why you should care!
 
 # What can we do with these tools?
 
-## Type-stable outputs with `map_*()` {.build}
-
-```{r unlist map output, echo=TRUE}
-list(1, 2, 3) %>% 
-    map(square) %>% 
-    unlist()
-```
 <div class="notes">
-The basic unit for working with `purrr` is the list.
-
-`map()` takes in a list and **ALWAYS** returns a list. (Can also take a vector, or something that's a list in disguise like a data.frame.)
-
-What if you know that the output will be a list comprising only length 1 integer vectors?
-
-Can use `unlist()` on the output, but that has a couple of drawbacks:
-
-First: it will work whether or not the list really does have just a single value in each element.
-
-Second: The output can be of any type (character, integer etc.)
-</div>
-
-## Type-stable outputs with `map_*()`
-
-```{r unreliable unlist, echo=TRUE}
-list(1, 2, c(3, 4)) %>% 
-    map(square) %>% 
-    unlist()
-```
-
-<div class="notes">
-You can see here that the structure of the list, with different length vectors, is lost.
-
-Instead `purrr` has a whole family of functions that will attempt to return a vector of the chosen type. 
-</div>
-
-## Type-stable outputs with `map_*()`
-
-```{r map_dbl ex, echo=TRUE}
-list(1, 2, 3) %>% 
-    map_dbl(square)
-```
-
-<div class="notes">
-The output from `map_dbl()` is a numeric vector instead of a list.
-
-`purrr` is much more demanding than `unlist()` though. For example:
-</div>
-
-## Type-stable outputs with `map_*()` {.build}
-
-```{r map_dbl type error, echo=TRUE, error=TRUE}
-list(1, 2, 3) %>% 
-    map_int(square)
-```
-
-<div class="notes">
-It won't do any type coercion, so if you give it a double type and ask it to return an integer, it will throw an error.
-</div>
-
-## Type-stable outputs with `map_*()` {.build}
-
-```{r map_dbl length error, echo=TRUE, error=TRUE}
-list(1, 2, c(3, 4)) %>% 
-    map_dbl(square)
-```
-
-<div class="notes">
-Also if every element of the output isn't length one then it will throw an error.
-
-This makes purrr sound like a prima donna, but this means you have high confidence in the outputs: you avoid silent failures, and if your code fails you can more easily trace how and why it happened. This is where it differs from some of the `*apply()` family, particularly `sapply()`. This is the difference in reliability that I alluded to earlier. You don't know for sure what the type of the output from `sapply()` will be.
-
-You can also output a tibble by calling `map_dfr()` or `map_dfc()`.I'll show an example of that a bit later …
-</div>
-
-## Mappers {.build}
-
-```{r get python indices long, echo=TRUE}
-list(1, 
-     c(2, 3), 
-     c(4, 5, 6)) %>% 
-    map_int(function(x) {
-        length(x) - 1L
-    })
-```
-
-<div class="notes">
-Often we want a function just to do a one-off job. 
-
-Here I want the length of each element of the list minus one, maybe because I'm going to work in another language that uses zero-indexing. This sort of function with no name is called an anonymous function.
-
-`purrr` provides an easier way than this, which is called a **mapper**.
-</div>
-
-## Mappers
-
-```{r get python indices mapper, echo=TRUE}
-list(1, 
-     c(2, 3), 
-     c(4, 5, 6)) %>% 
-    map_int(~ length(.x) - 1L)
-```
-
-<div class="notes">
-The tilde creates a formula in R. This sort of one-sided formula in `purrr` lets you build functions very easily. 
-
-You save a few keystrokes, plus there's no curly braces to worry about closing. 
-
-And you can refer to the elements of the list with that `.x` pronoun, which is another thing you get for free with `purrr`.
-</div>
-
-# `purrr` in action
-
-<div class="notes">
-There is **WAY** more to `purrr`, including functions for working with two lists at once, more than two lists, and loads more. But to keep to a sensible time I'm going to switch to an example of using `purrr` and functional programming for something closer to real work.
+There an awful lot to  to `purrr`: far more than I can properly cover in this session. So to keep to a sensible time I'm going to switch to an example of using `purrr` and functional programming for something closer to real work.
 </div>
 
 ## The German Credit Dataset
 
-```{r read data}
+```{r read data, echo=TRUE}
 d <- read_rds("./data/clean/german_credit_cleaned.rds")
 head(d) %>% 
     select(acct_status, duration, outcome) %>% 
@@ -456,12 +344,12 @@ I've already done the cleaning and recoding.
 
 ## `glmnet`
 
-- Standard binomial regression, plus …
+- Standard logistic regression, plus …
 - A penalty for considering variables to be too important.
 - Helps the model to generalise to new data.
 
 <div class="notes">
-I'll be using a regularised binomial regression via the `glmnet` package.
+I'll be using a regularised logistic regression via the `glmnet` package. Which means …
 
 Regularised just means that the model adds a penalty for giving more importance to the variables when making predictions. 
 
@@ -480,8 +368,7 @@ Want to:
 - Test $\alpha = \{0.0, 0.05, 0.10, ... , 1.0\}$, and
 - Have the results in a useful format.
 
-We can do this with functional programming and `purrr`!
-
+We will do this with functional programming and `purrr`!
 
 <div class="notes">
 glmnet will automatically optimise the strength of the penalty for us if we want it to, so let's put that to one side for now.
@@ -507,7 +394,7 @@ y <- if_else(d$outcome == "bad", 1L, 0L)
 <div class="notes">
 glmnet only accepts numeric type inputs, so the first step is to turn our tibble, `d`, into a matrix.
 
-Notice though that we can pipe a matrix into a function: in this case to scale all of the predictors so that they have a mean of 0 and variance 1. 
+Notice though that we can pipe a matrix into a function: in this case to scale all of the predictors so that they have a mean of 0 and variance 1. You can use the pipe without `purrr`, and vice versa.
 </div>
 
 ## Data Loading and Partition
@@ -572,9 +459,9 @@ trained_models
 <div class="notes">
 This step actually builds the model.
 
-[Walk through the code]
+[Walk through the code, including the use of the mapper and `.x`]
 
-Note the list column in the output.
+Note the list column in the output, which is because we used `map()`.
 
 All the models are stored in one place, and the alpha column is a bit like metadata for the models, so we don't need to look inside each one to see how it was trained.
 </div>
@@ -605,6 +492,22 @@ c("lambda.min", "lambda.1se") %>%
     map(~ trained_models)
 ```
 
+<div class="notes">
+Start by piping the vector into `map()`. The function starts off with the tibble of trained models.
+</div>
+
+## Training Results
+
+```{r train results 2, echo=TRUE}
+c("lambda.min", "lambda.1se") %>% 
+    map(~ trained_models %>% 
+            mutate(lambda = .x))
+```
+
+<div class="notes">
+Note that the output is a list of tibbles, which we don't really want. 
+</div>
+
 ## Training Results
 
 ```{r train results 3, echo=TRUE}
@@ -614,7 +517,41 @@ c("lambda.min", "lambda.1se") %>%
 ```
 
 <div class="notes">
-This is the use of `map_dfr()` that I mentioned earlier. It binds the two tibbles together row-wise, so we get a single tibble of 42 rows.
+Instead use `map_dfr()` to have `purrr` bind the elements of the list together as a single tibble of 42 rows. Can do this to return an output of whatever type you like. However …
+</div>
+
+## `purrr` type error
+
+```{r train results 3b, echo=TRUE, error=TRUE}
+c("lambda.min", "lambda.1se") %>% 
+    map_int(~ trained_models %>% 
+                mutate(lambda = .x))
+```
+
+<div class="notes">
+If I ask `purrr` to create an integer vector from the output it throws an error. It won't coerce types, it won't combine elements of different types. Just throws an informative error. 
+</div>
+
+## `purrr` type error {.build}
+
+```{r type error, echo=TRUE, error=TRUE}
+list(c(1, 2, 3), 
+     c(4, 5), 
+     c(6)) %>% 
+    map_dbl(max)
+
+list(c(1, 2, 3), 
+     c(4, 5), 
+     c(6)) %>% 
+    map_int(max)
+```
+
+<div class="notes">
+Even a really simple thing, like changing a double to an integer, will throw an error. 
+
+This makes purrr sound like a prima donna, but this means you have high confidence in the outputs: you avoid silent failures, and if your code fails you can more easily trace how and why it happened. This is where it differs from some of the `*apply()` family, particularly `sapply()`. This is the difference in reliability that I alluded to earlier. You don't know for sure what the type of the output from `sapply()` will be.
+
+Back to our example …
 </div>
 
 ## Training Results
@@ -634,9 +571,11 @@ c("lambda.min", "lambda.1se") %>%
 ```
 
 <div class="notes">
-This gives us the predictions for our models at each value of lambda, so now we can calculate the error (deviance). 
+Walk through the code.
 
-One way to do that would be just adding the code to calculate deviance in another call to mutate at the end of this chain. But this session is about functions!
+Note use of `map2()` to work with two lists at once.
+
+Now we need the error metric. Could just add the code in another call to `mutate()` at the end of this chain. But this session is about functions!
 </div>
 
 ## Error Function
@@ -652,7 +591,7 @@ binom_deviance <- function(pred,
 ```
 
 <div class="notes">
-This function calculates binomial regression deviance. 
+Build a function to calculate binomial regression deviance. 
 
 Because `coalesce()` is part of the `dplyr` package I add `dplyr::` in front of it: that means the function will work even if `dplyr` isn't loaded. (Although it does have to be installed.)
 </div>
@@ -677,7 +616,7 @@ train_results <- c("lambda.min", "lambda.1se") %>%
 ```
 
 <div class="notes">
-Then just map that function on to the predictions. See at the end I can pass the extra argument for the actual values as an extra named argument.
+Then just map that function on to the predictions. See at the end I can pass the extra argument for the actual values as an extra named argument. In this case it's easier than using a mapper.
 </div>
 
 ## Training Results
@@ -741,7 +680,7 @@ Because the results are in a tibble getting this plot is easy.
 
 It also means we can do all the usual operations on the tibble, like filtering, which brings us on to selecting a model.
 
-Let's be conservative about these results and go with the value of alpha that gives the best results with lambda.1se, and check its performance on the test dataset. Remember that lambda.1se has a stronger penalty, so it should generalise better than the minimum.
+Let's be conservative about these results and go with the value of alpha that gives the best results with lambda.1se, and check its performance on the test dataset. Remember that lambda.1se has a stronger penalty, so it _should_ generalise better than the minimum.
 
 And **purely for comparison** we will also look at the same value of alpha with lambda.min. (Would never do this on a real problem: you can't choose models based on the test results!)
 </div>
