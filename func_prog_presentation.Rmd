@@ -756,8 +756,15 @@ The gap between the test error for the two values for lambda has basically vanis
 
 - To learn about `purrr`: [Jenny Bryan's tutorials][JB_purrr]
 - For more on FP in R: [Hadley Wickham's Advanced R][adv_r]
-- Further reading on FP Principles: [Structure and Interpretation of Computer Programs][SICP], AKA _The Wizard Book_
+- Further reading on FP Principles: [Structure and Interpretation of Computer Programs][SICP], AKA _The Wizard Book_. (Also check out the accompanying [video lectures][SICP_lectures], and enjoy the 1985 vibes.)
 - This presentation available at [GitHub][GH_repo]
+
+<div class="notes">
+All of the resources I'm mentioning today are free online: no paywalls, subscriptions, or anything of the sort.
+
+The Wizard Book Recommendation came via Anthony Coyne, although Hadley Wickham also cites it in the intro to his book.
+
+</div>
 
 # Thank you
 
@@ -767,5 +774,6 @@ The gap between the test error for the two values for lambda has basically vanis
 [DC_intermediate]: https://www.datacamp.com/courses/intermediate-functional-programming-with-purrr
 [tidy_ML]: https://www.datacamp.com/courses/machine-learning-in-the-tidyverse
 [adv_r]: http://adv-r.had.co.nz/
-[SICP]: https://web.mit.edu/alexmv/6.037/sicp.pdf
+[SICP]: https://mitpress.mit.edu/sites/default/files/sicp/index.html
+[SICP_lectures]: https://www.youtube.com/watch?v=2Op3QLzMgSY&list=PLE18841CABEA24090
 [GH_repo]: https://github.com/hamedbh/func-prog
