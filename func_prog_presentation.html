@@ -3379,7 +3379,7 @@ df %&gt;%
 
 <p>But <code>map()</code> will only ever return a list, so to get back to a <code>data.frame</code> we need one extra step …</p></section></aside>
 
-</article></slide><slide class=""><hgroup><h2>The easier code is to reuse and adapt, the better</h2></hgroup><article  id="the-easier-code-is-to-reuse-and-adapt-the-better-5" class="build">
+</article></slide><slide class=""><hgroup><h2>The easier code is to reuse and adapt, the better</h2></hgroup><article  id="the-easier-code-is-to-reuse-and-adapt-the-better-5">
 
 <pre class = 'prettyprint lang-r'>df %&gt;% 
     map(fix_missing) %&gt;% 
@@ -3399,7 +3399,7 @@ df %&gt;%
 
 </article></slide><slide class="segue dark nobackground level1"><hgroup class = 'auto-fadein'><h2>The more reliable my results from code, the better</h2></hgroup><article  id="the-more-reliable-my-results-from-code-the-better">
 
-</article></slide><slide class=""><hgroup><h2>Question …</h2></hgroup><article  id="question" class="build">
+</article></slide><slide class=""><hgroup><h2>Question …</h2></hgroup><article  id="question">
 
 <div class="centered">
 <h4>Do you expect code to give the same results every time?</h4></div>
@@ -3504,26 +3504,7 @@ clean_df</pre>
 
 <p>This makes purrr sound like a prima donna, but this means you have high confidence in the outputs: you avoid silent failures, and if your code fails you can more easily trace how and why it happened. This is where it differs from some of the <code>*apply()</code> family, particularly <code>sapply()</code>. This is the difference in reliability that I alluded to earlier. You don’t know for sure what the type of the output from <code>sapply()</code> will be.</p>
 
-<p>You can also output a tibble by calling <code>map_dfr()</code> or <code>map_dfc()</code>. To return to the data cleaning example from earlier …</p></section></aside>
-
-</article></slide><slide class=""><hgroup><h2>Type-stable outputs with <code>map_*()</code></h2></hgroup><article  id="type-stable-outputs-with-map_-5" class="build">
-
-<pre class = 'prettyprint lang-r'>df %&gt;% 
-    map_dfc(fix_missing)</pre>
-
-<pre >## # A tibble: 6 x 6
-##       a     b     c     d     e     f
-##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-## 1     1     6     1     5    NA     1
-## 2    10     4     4    NA     9     3
-## 3     7     9     5     4     1     4
-## 4     2     9     3     8     6     8
-## 5     1    10     5     9     8     6
-## 6     6     2     1     3     8     5</pre>
-
-<aside class='note'><section><p>Using <code>map_dfc()</code> combines the output as the columns of a tibble (which is the tidyverse version of a <code>data.frame</code>).</p>
-
-<p>If you wanted to combine the output as the rows of a tibble you would use <code>map_dfr()</code>. You’ll see an example of that a bit later.</p></section></aside>
+<p>You can also output a tibble by calling <code>map_dfr()</code> or <code>map_dfc()</code>.I’ll show an example of that a bit later …</p></section></aside>
 
 </article></slide><slide class=""><hgroup><h2>Mappers</h2></hgroup><article  id="mappers" class="build">
 
@@ -3557,113 +3538,11 @@ clean_df</pre>
 
 <p>And you can refer to the elements of the list with that <code>.x</code> pronoun, which is another thing you get for free with <code>purrr</code>.</p></section></aside>
 
-</article></slide><slide class=""><hgroup><h2>The <code>map2_*()</code> family</h2></hgroup><article  id="the-map2_-family" class="build">
-
-<h3>What if we have two lists and want to work with them both?</h3>
-
-<pre class = 'prettyprint lang-r'>lst1 &lt;- list(1, 
-             c(2, 3), 
-             c(4, 5, 6))
-lst2 &lt;- list(1, 2, 3)
-
-map2(lst1, lst2, ~ .x[.y])</pre>
-
-<pre >## [[1]]
-## [1] 1
-## 
-## [[2]]
-## [1] 3
-## 
-## [[3]]
-## [1] 6</pre>
-
-<aside class='note'><section><p>Here you subset the elements of the first list with the elements of the second list.</p>
-
-<p>And you can refer to the elements of the second list with .y.</p></section></aside>
-
-</article></slide><slide class=""><hgroup><h2>The <code>map2_*()</code> family</h2></hgroup><article  id="the-map2_-family-1" class="build">
-
-<pre class = 'prettyprint lang-r'>map2_dbl(lst1, lst2, ~ .x[.y])</pre>
-
-<pre >## [1] 1 3 6</pre>
-
-<aside class='note'><section><p>You have the same options for type-specific outputs with <code>map2()</code> as with <code>map()</code>.</p>
-
-<p>map2_dbl() returns a numeric vector instead of a list.</p></section></aside>
-
-</article></slide><slide class=""><hgroup><h2>The <code>pmap_*()</code> family</h2></hgroup><article  id="the-pmap_-family" class="build">
-
-<p>Why stop at two lists?</p>
-
-<pre class = 'prettyprint lang-r'>lst3 &lt;- list(10, 100, 1000)
-
-pmap(list(lst1, lst2, lst3), 
-     ~ ..1[..2] * ..3)</pre>
-
-<pre >## [[1]]
-## [1] 10
-## 
-## [[2]]
-## [1] 300
-## 
-## [[3]]
-## [1] 6000</pre>
-
-<aside class='note'><section><p>The <code>pmap()</code> functions take a list of lists or vectors as the first argument, then apply a function.</p>
-
-<p>This <code>..1</code>, <code>..2</code> shorthand lets you refer to the relevant elements of the lists.</p></section></aside>
-
-</article></slide><slide class=""><hgroup><h2>The <code>imap_*()</code> family</h2></hgroup><article  id="the-imap_-family" class="build">
-
-<pre class = 'prettyprint lang-r'>lst1</pre>
-
-<pre >## [[1]]
-## [1] 1
-## 
-## [[2]]
-## [1] 2 3
-## 
-## [[3]]
-## [1] 4 5 6</pre>
-
-<aside class='note'><section><p>Sometimes it’s really useful to work with the elements of a list AND its indices or names.</p>
-
-<p>Start with this list. Suppose we want the first element of the first list, second of the second, third of the third.</p></section></aside>
-
-</article></slide><slide class=""><hgroup><h2>The <code>imap_*()</code> family</h2></hgroup><article  id="the-imap_-family-1">
-
-<pre class = 'prettyprint lang-r'>map2_style &lt;- map2_dbl(lst1, seq_along(lst1), ~.x[.y])
-map2_style</pre>
-
-<pre >## [1] 1 3 6</pre>
-
-<aside class='note'><section><p>Can do this manually by adding this <code>seq_along(lst1)</code> argument to <code>map2()</code>.</p></section></aside>
-
-</article></slide><slide class=""><hgroup><h2>The <code>imap_*()</code> family</h2></hgroup><article  id="the-imap_-family-2">
-
-<pre class = 'prettyprint lang-r'>imap_style &lt;- imap_dbl(lst1, ~.x[.y])
-imap_style</pre>
-
-<pre >## [1] 1 3 6</pre>
-
-<pre class = 'prettyprint lang-r'>all.equal(map2_style, imap_style)</pre>
-
-<pre >## [1] TRUE</pre>
-
-<aside class='note'><section><p>Using <code>imap()</code> gives exactly the same results.</p>
-
-<p>If that list has names then <code>.y</code> will be the names rather than the indices.</p></section></aside>
-
 </article></slide><slide class="segue dark nobackground level1"><hgroup class = 'auto-fadein'><h2><code>purrr</code> in action</h2></hgroup><article  id="purrr-in-action">
 
-<aside class='note'><section><p>Now an example just to show you some of what’s possible with <code>purrr</code> and functional programming.</p></section></aside>
+<aside class='note'><section><p>There is <strong>WAY</strong> more to <code>purrr</code>, including functions for working with two lists at once, more than two lists, and loads more. But to keep to a sensible time I’m going to switch to an example of using <code>purrr</code> and functional programming for something closer to real work.</p></section></aside>
 
 </article></slide><slide class=""><hgroup><h2>The German Credit Dataset</h2></hgroup><article  id="the-german-credit-dataset">
-
-<pre class = 'prettyprint lang-r'>d &lt;- read_rds(&quot;./data/clean/german_credit_cleaned.rds&quot;)
-head(d) %&gt;% 
-    select(acct_status, duration, outcome) %&gt;% 
-    knitr::kable()</pre>
 
 <table class = 'rmdtable'>
 <tr class="header">
@@ -3853,12 +3732,9 @@ trained_models</pre>
 
 <ul class = 'build'>
 <li>A way to measure prediction error;</li>
-<li>To tell <code>glmnet</code> which value of <code>lambda</code> to use:
-
-<ul class = 'build'>
+<li>To tell <code>glmnet</code> which value of <code>lambda</code> to use:</li>
 <li><code>&quot;lambda.min&quot;</code>, or</li>
 <li><code>&quot;lambda.1se&quot;</code></li>
-</ul></li>
 </ul>
 
 <aside class='note'><section><p>lambda.min is the one that got the absolute best results in model training.</p>
@@ -3936,8 +3812,8 @@ trained_models</pre>
                            actual) {
     mean(2 * (dplyr::coalesce(actual * log(actual/pred), 0) + 
                   dplyr::coalesce((1 - actual) * 
-                               log((1 - actual)/(1 - pred)), 
-                           0)))
+                                      log((1 - actual)/(1 - pred)), 
+                                  0)))
 }</pre>
 
 <aside class='note'><section><p>This function calculates binomial regression deviance.</p>

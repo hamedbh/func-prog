@@ -73,21 +73,9 @@ Here I call the function on a vector of numbers,
 
 And the result is as expected.
 
-Note though that this won't work if those same numbers are stored in a list …
-</div>
+Note though that this won't work if those same numbers are stored in a list, for which we need some sort of iteration, which we'll see in a bit.
 
-## Functions
-
-```{r square list, echo=TRUE, error=TRUE}
-square(list(1, 2, 3, 4, 5))
-```
-
-<div class="notes">
-As you can see.
-
-For lists we need some sort of iteration, which we'll see in a bit.
-
-But before that, a word on our second star of the show …
+But before that, a word on our second star of the show ……
 </div>
 
 ## The Pipe {.flexbox .vcenter}
@@ -279,7 +267,7 @@ Now the whole `data.frame` is handled at once.
 But `map()` will only ever return a list, so to get back to a `data.frame` we need one extra step …
 </div>
 
-## The easier code is to reuse and adapt, the better {.build}
+## The easier code is to reuse and adapt, the better
 
 ```{r best recoding to df, echo=TRUE}
 df %>% 
@@ -295,7 +283,7 @@ There's no limit to the number of pipes you can chain together, and being able t
 
 # The more reliable my results from code, the better
 
-## Question … {.build}
+## Question …
 
 <div class="centered">
 #### Do you expect code to give the same results every time?
@@ -406,20 +394,7 @@ Also if every element of the output isn't length one then it will throw an error
 
 This makes purrr sound like a prima donna, but this means you have high confidence in the outputs: you avoid silent failures, and if your code fails you can more easily trace how and why it happened. This is where it differs from some of the `*apply()` family, particularly `sapply()`. This is the difference in reliability that I alluded to earlier. You don't know for sure what the type of the output from `sapply()` will be.
 
-You can also output a tibble by calling `map_dfr()` or `map_dfc()`. To return to the data cleaning example from earlier …
-</div>
-
-## Type-stable outputs with `map_*()` {.build}
-
-```{r best recoding and map_dfc, echo=TRUE}
-df %>% 
-    map_dfc(fix_missing)
-```
-
-<div class="notes">
-Using `map_dfc()` combines the output as the columns of a tibble (which is the tidyverse version of a `data.frame`). 
-
-If you wanted to combine the output as the rows of a tibble you would use `map_dfr()`. You'll see an example of that a bit later.
+You can also output a tibble by calling `map_dfr()` or `map_dfc()`.I'll show an example of that a bit later …
 </div>
 
 ## Mappers {.build}
@@ -458,100 +433,15 @@ You save a few keystrokes, plus there's no curly braces to worry about closing.
 And you can refer to the elements of the list with that `.x` pronoun, which is another thing you get for free with `purrr`.
 </div>
 
-## The `map2_*()` family {.build}
-
-### What if we have two lists and want to work with them both?
-
-```{r map2, echo=TRUE}
-lst1 <- list(1, 
-             c(2, 3), 
-             c(4, 5, 6))
-lst2 <- list(1, 2, 3)
-
-map2(lst1, lst2, ~ .x[.y])
-```
-
-<div class="notes">
-Here you subset the elements of the first list with the elements of the second list.
-
-And you can refer to the elements of the second list with .y.
-</div>
-
-## The `map2_*()` family {.build}
-
-```{r map2_dbl, echo=TRUE}
-map2_dbl(lst1, lst2, ~ .x[.y])
-```
-
-<div class="notes">
-You have the same options for type-specific outputs with `map2()` as with `map()`.
-
-map2_dbl() returns a numeric vector instead of a list.
-</div>
-
-## The `pmap_*()` family {.build}
-
-Why stop at two lists?
-
-```{r pmap, echo=TRUE}
-lst3 <- list(10, 100, 1000)
-
-pmap(list(lst1, lst2, lst3), 
-     ~ ..1[..2] * ..3)
-```
-
-<div class="notes">
-The `pmap()` functions take a list of lists or vectors as the first argument, then apply a function.
-
-This `..1`, `..2` shorthand lets you refer to the relevant elements of the lists.
-</div>
-
-## The `imap_*()` family {.build}
-
-```{r imap show lst1, echo=TRUE}
-lst1
-```
-
-<div class="notes">
-Sometimes it's really useful to work with the elements of a list AND its indices or names.
-
-Start with this list. Suppose we want the first element of the first list, second of the second, third of the third.
-</div>
-
-## The `imap_*()` family
-
-```{r imap manually, echo=TRUE}
-map2_style <- map2_dbl(lst1, seq_along(lst1), ~.x[.y])
-map2_style
-```
-
-<div class="notes">
-Can do this manually by adding this `seq_along(lst1)` argument to `map2()`.
-</div>
-
-## The `imap_*()` family
-
-```{r imap properly, echo=TRUE}
-imap_style <- imap_dbl(lst1, ~.x[.y])
-imap_style
-all.equal(map2_style, imap_style)
-```
-
-<div class="notes">
-Using `imap()` gives exactly the same results.
-
-If that list has names then `.y` will be the names rather than the indices.
-</div>
-
 # `purrr` in action
 
 <div class="notes">
-Now an example just to show you some of what's possible with `purrr` and functional programming.
+There is **WAY** more to `purrr`, including functions for working with two lists at once, more than two lists, and loads more. But to keep to a sensible time I'm going to switch to an example of using `purrr` and functional programming for something closer to real work.
 </div>
 
 ## The German Credit Dataset
 
-```{r read data, echo=TRUE}
+```{r read data}
 d <- read_rds("./data/clean/german_credit_cleaned.rds")
 head(d) %>% 
     select(acct_status, duration, outcome) %>% 
@@ -578,12 +468,20 @@ Regularised just means that the model adds a penalty for giving more importance 
 It's a way of helping to generalise the model by reducing overfitting.
 </div>
 
-## `glmnet`
+## `glmnet` {.build}
 
 ### Two elements to the penalty
 
 1. `lambda`: the **strength** of the penalty
 2. `alpha`: the **type** of penalty
+
+Want to:
+
+- Test $\alpha = \{0.0, 0.05, 0.10, ... , 1.0\}$, and
+- Have the results in a useful format.
+
+We can do this with functional programming and `purrr`!
+
 
 <div class="notes">
 glmnet will automatically optimise the strength of the penalty for us if we want it to, so let's put that to one side for now.
@@ -596,15 +494,6 @@ However we have to pick a value for alpha, which can range from 0 to 1.
 
 The term for alpha and lambda is hyperparameters. There's no way to know just by looking at the dataset what value will be best for them. So we have to test.
 </div>
-
-## `glmnet` {.build}
-
-Want to:
-
-- Test $\alpha = \{0.0, 0.05, 0.10, ... , 1.0\}$, and
-- Have the results in a useful format.
-
-We can do this with functional programming and `purrr`!
 
 ## Data Loading and Partition
 
@@ -696,8 +585,8 @@ All the models are stored in one place, and the alpha column is a bit like metad
 
 - A way to measure prediction error;
 - To tell `glmnet` which value of `lambda` to use: 
-    - `"lambda.min"`, or 
-    - `"lambda.1se"`
+- `"lambda.min"`, or 
+- `"lambda.1se"`
 
 <div class="notes">
 lambda.min is the one that got the absolute best results in model training.
@@ -757,8 +646,8 @@ binom_deviance <- function(pred,
                            actual) {
     mean(2 * (dplyr::coalesce(actual * log(actual/pred), 0) + 
                   dplyr::coalesce((1 - actual) * 
-                               log((1 - actual)/(1 - pred)), 
-                           0)))
+                                      log((1 - actual)/(1 - pred)), 
+                                  0)))
 }
 ```
 
@@ -922,11 +811,16 @@ test_results %>%
 The gap between the test error for the two values for lambda has basically vanished. We were right to be cautious!
 </div>
 
-## Where next with purrr and Functional Programming?
+# Where next?
+
+## Where next with `purrr` and Functional Programming?
 
 - To learn about `purrr`: [Jenny Bryan's tutorials][JB_purrr]
 - For more on FP in R: [Hadley Wickham's Advanced R][adv_r]
 - Further reading on FP Principles: [Structure and Interpretation of Computer Programs][SICP], AKA _The Wizard Book_
+- This presentation available at [GitHub][GH_repo]
+
+# Thank you
 
 [adv_r_fp_ex]: http://adv-r.had.co.nz/Functional-programming.html#fp-motivation
 [JB_purrr]: https://jennybc.github.io/purrr-tutorial/
@@ -935,3 +829,4 @@ The gap between the test error for the two values for lambda has basically vanis
 [tidy_ML]: https://www.datacamp.com/courses/machine-learning-in-the-tidyverse
 [adv_r]: http://adv-r.had.co.nz/
 [SICP]: https://web.mit.edu/alexmv/6.037/sicp.pdf
+[GH_repo]: https://github.com/hamedbh/func-prog
