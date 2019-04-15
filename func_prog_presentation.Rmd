@@ -756,7 +756,7 @@ The gap between the test error for the two values for lambda has basically vanis
 
 - To learn about `purrr`: [Jenny Bryan's tutorials][JB_purrr]
 - For more on FP in R: [Hadley Wickham's Advanced R][adv_r]
-- Further reading on FP Principles: [Structure and Interpretation of Computer Programs][SICP], AKA _The Wizard Book_. (Also check out the accompanying [video lectures][SICP_lectures], and enjoy the 1985 vibes.)
+- Further reading on FP Principles: [Structure and Interpretation of Computer Programs][SICP], AKA _The Wizard Book_. (Also check out the accompanying [video lectures][SICP_lectures], and enjoy the 1986 vibes.)
 - This presentation available at [GitHub][GH_repo]
 
 <div class="notes">
