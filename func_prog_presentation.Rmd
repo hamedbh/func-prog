@@ -64,7 +64,7 @@ Code that takes in some number of inputs, does stuff, then returns some number o
 This is how you most often define a function in R.
 </div>
 
-## Functions {.build}
+## Functions 
 
 ```{r apply square 2, echo=TRUE}
 square(c(1, 2, 3, 4, 5))
@@ -91,7 +91,7 @@ Many of you will already know about the `%>%` operator. Read it as:
 
 It allows code to be read from left to right, top to bottom, instead of nesting function calls. 
 
-For anyone that's used a Unix command line it's very similar to the `|` operator.
+For anyone that's used a Unix command line it's somewhat similar to the `|` operator.
 </div>
 
 ## The Pipe
