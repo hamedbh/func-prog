@@ -449,12 +449,15 @@ Start off with the values we want to use for alpha
 trained_models <- tibble(
     alpha = seq(0, 1, 0.05)
 ) %>% 
+    ### <b>
     mutate(model = map(alpha, 
                        ~ cv.glmnet(Xtrain, 
                                    ytrain, 
                                    family = "binomial", 
                                    foldid = cv_folds, 
-                                   alpha = .x)))
+                                   alpha = .x))
+           ### </b>
+    )
 trained_models
 ```
 
