@@ -3123,7 +3123,7 @@ if (document.readyState !== "loading" &&
 <li>Where can I learn more?</li>
 </ul>
 
-<aside class='note'><section><p>The structure for this session will be to answer three questions …</p></section></aside>
+<aside class='note'><section><p>Hopefully by the end of this session I’ll have answered these questions …</p></section></aside>
 
 </article></slide><slide class="segue dark nobackground level1"><hgroup class = 'auto-fadein'><h2>Why should I care?</h2></hgroup><article  id="why-should-i-care">
 
@@ -3144,6 +3144,8 @@ if (document.readyState !== "loading" &&
 <p>Addressing these three points will hopefully convince you that you should care. Before we get going in earnest though I need to talk briefly about two things at the centre of this talk …</p></section></aside>
 
 </article></slide><slide class=""><hgroup><h2>Functions</h2></hgroup><article  id="functions" class="build">
+
+<h3>What is a function?</h3>
 
 <pre class = 'prettyprint lang-r'>square &lt;- function(x) {
     return(x^2)
@@ -3423,7 +3425,7 @@ clean_df</pre>
 ## 5  1 10 5  9  8 6
 ## 6  6  2 1  3  8 5</pre>
 
-<aside class='note'><section><p>I mentioned earlier that functional programming modifying objects in place.</p>
+<aside class='note'><section><p>I mentioned earlier that functional programming avoids modifying objects in place.</p>
 
 <p>Here we pass the object into a series of functions and assign the output to a new name.</p>
 
@@ -3802,10 +3804,10 @@ trained_models</pre>
                                                 newx = Xtrain, 
                                                 type = &quot;response&quot;, 
                                                 s = .y))) %&gt;% 
-            mutate(train_dev = map_dbl(train_preds, 
+<b>            mutate(train_dev = map_dbl(train_preds, 
                                        binom_deviance, 
                                        actual = ytrain))
-    )</pre>
+</b>    )</pre>
 
 <aside class='note'><section><p>Then just map that function on to the predictions. See at the end I can pass the extra argument for the actual values as an extra named argument. In this case it’s easier than using a mapper.</p></section></aside>
 
@@ -3926,7 +3928,7 @@ best_alpha</pre>
 
 <aside class='note'><section><p>All of the resources I’m mentioning today are free online: no paywalls, subscriptions, or anything of the sort.</p>
 
-<p>The Wizard Book Recommendation came via Anthony Coyne, although Hadley Wickham also cites it in the intro to his book.</p></section></aside>
+<p>The Wizard Book Recommendation came via Anthony Coyne, although Hadley Wickham also cites it in the intro to his book. It’s broader than just functional programming, but it really gets into the concepts behind it.</p></section></aside>
 
 </article></slide><slide class="segue dark nobackground level1"><hgroup class = 'auto-fadein'><h2>Thank you</h2></hgroup><article  id="thank-you"></article></slide>
 

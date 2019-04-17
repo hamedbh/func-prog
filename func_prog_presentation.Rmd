@@ -25,7 +25,7 @@ library(caret)
 - Where can I learn more?
 
 <div class="notes">
-The structure for this session will be to answer three questions …
+Hopefully by the end of this session I'll have answered these questions …
 </div>
 
 # Why should I care?
@@ -47,6 +47,8 @@ Addressing these three points will hopefully convince you that you should care. 
 </div>
 
 ## Functions {.build}
+
+### What is a function?
 
 ```{r create square, echo=TRUE}
 square <- function(x) {
@@ -314,7 +316,7 @@ clean_df <- df %>%
 clean_df
 ```
 <div class="notes">
-I mentioned earlier that functional programming modifying objects in place.
+I mentioned earlier that functional programming avoids modifying objects in place.
 
 Here we pass the object into a series of functions and assign the output to a new name.
 
@@ -609,9 +611,11 @@ train_results <- c("lambda.min", "lambda.1se") %>%
                                                 newx = Xtrain, 
                                                 type = "response", 
                                                 s = .y))) %>% 
+            ### <b>
             mutate(train_dev = map_dbl(train_preds, 
                                        binom_deviance, 
                                        actual = ytrain))
+        ### </b>
     )
 ```
 
@@ -762,8 +766,7 @@ The gap between the test error for the two values for lambda has basically vanis
 <div class="notes">
 All of the resources I'm mentioning today are free online: no paywalls, subscriptions, or anything of the sort.
 
-The Wizard Book Recommendation came via Anthony Coyne, although Hadley Wickham also cites it in the intro to his book.
-
+The Wizard Book Recommendation came via Anthony Coyne, although Hadley Wickham also cites it in the intro to his book. It's broader than just functional programming, but it really gets into the concepts behind it.
 </div>
 
 # Thank you
